@@ -1,0 +1,306 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Interactive conceptual visualization of hurricane rainfall, storm surge, and inland drainage backwater flooding." />
+  <title>Hurricane Backwater Flooding Explorer</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div id="app-shell">
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Conceptual preparedness visualization</p>
+        <h1>Hurricane Backwater Flooding Explorer</h1>
+        <p class="subtitle">See how surge can block drainage well inland—without the surge itself ever reaching the house.</p>
+      </div>
+      <div class="top-actions">
+        <label class="unit-toggle" title="Change displayed units">
+          <span>Units</span>
+          <select id="unit-system">
+            <option value="imperial">US</option>
+            <option value="metric">Metric</option>
+          </select>
+        </label>
+        <button id="about-button" class="ghost-button">Model notes</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero-grid">
+        <aside class="control-panel panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Scenario controls</p>
+              <h2>Storm & drainage</h2>
+            </div>
+            <button id="reset-scenario" class="icon-button" title="Reset current scenario">↺</button>
+          </div>
+
+          <div class="control-group preset-group">
+            <label for="preset-select">Scenario preset</label>
+            <select id="preset-select"></select>
+          </div>
+
+          <div class="control-section">
+            <button class="section-toggle" data-section="storm-controls" aria-expanded="true">
+              <span>Storm forcing</span><span>−</span>
+            </button>
+            <div id="storm-controls" class="section-body open">
+              <div class="control-row">
+                <label for="surge-peak">Peak lake rise <span id="surge-peak-value"></span></label>
+                <input id="surge-peak" type="range" min="0" max="10" step="0.1" />
+              </div>
+              <div class="control-row">
+                <label for="river-start">River starting level <span id="river-start-value"></span></label>
+                <input id="river-start" type="range" min="-1" max="6" step="0.1" />
+              </div>
+              <div class="control-row split-inputs">
+                <div>
+                  <label for="rain-profile">Rain profile</label>
+                  <select id="rain-profile">
+                    <option value="hurricane">Hurricane pulse</option>
+                    <option value="constant">Constant</option>
+                  </select>
+                </div>
+                <div>
+                  <label for="rain-start">Rain starts</label>
+                  <select id="rain-start">
+                    <option value="2">Hour 2</option>
+                    <option value="4">Hour 4</option>
+                    <option value="6">Hour 6</option>
+                    <option value="8">Hour 8</option>
+                    <option value="10">Hour 10</option>
+                  </select>
+                </div>
+              </div>
+              <div class="control-row">
+                <label for="rain-rate">Peak rainfall rate <span id="rain-rate-value"></span></label>
+                <input id="rain-rate" type="range" min="0" max="5" step="0.1" />
+              </div>
+              <div class="control-row">
+                <label for="rain-total">Storm rainfall cap <span id="rain-total-value"></span></label>
+                <input id="rain-total" type="range" min="0" max="30" step="0.5" />
+              </div>
+              <div class="control-row">
+                <label for="rain-duration">Rain duration <span id="rain-duration-value"></span></label>
+                <input id="rain-duration" type="range" min="0" max="24" step="0.5" />
+              </div>
+            </div>
+          </div>
+
+          <div class="control-section">
+            <button class="section-toggle" data-section="drainage-controls" aria-expanded="true">
+              <span>Drainage & terrain</span><span>−</span>
+            </button>
+            <div id="drainage-controls" class="section-body open">
+              <div class="control-row">
+                <label for="soil-saturation">Initial soil saturation <span id="soil-saturation-value"></span></label>
+                <input id="soil-saturation" type="range" min="0" max="100" step="1" />
+              </div>
+              <div class="control-row">
+                <label for="ditch-capacity">Ditch/channel capacity <span id="ditch-capacity-value"></span></label>
+                <input id="ditch-capacity" type="range" min="25" max="150" step="5" />
+              </div>
+              <div class="control-row">
+                <label for="culvert-capacity">Culvert capacity <span id="culvert-capacity-value"></span></label>
+                <input id="culvert-capacity" type="range" min="10" max="150" step="5" />
+              </div>
+              <div class="control-row">
+                <label for="debris-blockage">Debris blockage <span id="debris-blockage-value"></span></label>
+                <input id="debris-blockage" type="range" min="0" max="95" step="5" />
+              </div>
+              <div class="control-row">
+                <label for="neighborhood-elevation">Neighborhood elevation <span id="neighborhood-elevation-value"></span></label>
+                <input id="neighborhood-elevation" type="range" min="1" max="10" step="0.1" />
+              </div>
+              <div class="control-row">
+                <label for="slab-height">House slab above yard <span id="slab-height-value"></span></label>
+                <input id="slab-height" type="range" min="0" max="5" step="0.1" />
+              </div>
+              <label class="switch-row">
+                <span>
+                  <strong>Neighborhood pump</strong>
+                  <small>Conceptual supplemental drainage</small>
+                </span>
+                <input id="pump-enabled" type="checkbox" />
+                <span class="switch"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="control-section comparison-section">
+            <label class="switch-row">
+              <span>
+                <strong>Comparison mode</strong>
+                <small>Overlay a second scenario and rapidly switch views</small>
+              </span>
+              <input id="comparison-enabled" type="checkbox" />
+              <span class="switch"></span>
+            </label>
+            <div id="comparison-controls" class="comparison-controls hidden">
+              <label for="comparison-preset">Scenario B</label>
+              <select id="comparison-preset"></select>
+              <div class="segmented-control" role="group" aria-label="Scenario shown in 3D">
+                <button data-view-scenario="A" class="active">View A</button>
+                <button data-view-scenario="B">View B</button>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <section class="scene-column">
+          <div class="scene-card panel">
+            <div class="scene-toolbar">
+              <div class="view-toggle">
+                <button id="view-overview" class="active">Regional overview</button>
+                <button id="view-closeup">House close-up</button>
+              </div>
+              <div class="scene-actions">
+                <button id="toggle-labels" class="ghost-button active">Labels</button>
+                <button id="reset-camera" class="ghost-button">Reset camera</button>
+              </div>
+            </div>
+            <div id="scene-container" aria-label="Interactive three-dimensional drainage and flooding scene">
+              <div id="scene-loading">Loading 3D scene…</div>
+              <div class="scene-hint">Drag to rotate · Right-drag to pan · Scroll to zoom</div>
+            </div>
+            <div class="legend" aria-label="Map legend">
+              <span><i class="swatch normal-water"></i>Normal water</span>
+              <span><i class="swatch elevated-water"></i>Elevated water</span>
+              <span><i class="swatch flooded-ground"></i>Flooded ground</span>
+              <span><i class="arrow normal-flow">→</i>Downstream flow</span>
+              <span><i class="arrow restricted-flow">→</i>Restricted</span>
+              <span><i class="arrow reverse-flow">←</i>Reverse flow</span>
+              <span><i class="slab-line"></i>House slab</span>
+            </div>
+          </div>
+
+          <div class="status-panel panel">
+            <div class="status-main">
+              <p class="eyebrow">What is happening now</p>
+              <h2 id="status-message">Drainage is functioning normally.</h2>
+              <p id="status-detail">Rainfall runoff is moving through the ditch, canal, and river toward Lake Pontchartrain.</p>
+            </div>
+            <div class="efficiency-gauge" aria-label="Drainage efficiency">
+              <div class="gauge-ring" id="gauge-ring"><span id="efficiency-value">100%</span></div>
+              <small>Drainage efficiency</small>
+            </div>
+          </div>
+        </section>
+
+        <aside class="metrics-panel panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">Live model readout</p>
+              <h2>Current conditions</h2>
+            </div>
+          </div>
+          <div id="scenario-badge" class="scenario-badge">Scenario A</div>
+          <div class="metric-grid">
+            <div class="metric"><span>Simulation time</span><strong id="metric-time">0:00</strong></div>
+            <div class="metric"><span>Accumulated rain</span><strong id="metric-rain">0.0 in</strong></div>
+            <div class="metric"><span>Lake rise</span><strong id="metric-surge">0.0 ft</strong></div>
+            <div class="metric"><span>River level</span><strong id="metric-river">0.0 ft</strong></div>
+            <div class="metric"><span>Ditch water depth</span><strong id="metric-ditch">0.0 ft</strong></div>
+            <div class="metric"><span>Yard water depth</span><strong id="metric-yard">0.0 in</strong></div>
+            <div class="metric"><span>Below house slab</span><strong id="metric-slab-distance">1.2 ft</strong></div>
+            <div class="metric"><span>Maximum house depth</span><strong id="metric-max-house">0.0 in</strong></div>
+          </div>
+          <div class="forecast-cards">
+            <div>
+              <span>Yard flooding</span>
+              <strong id="yard-flood-time">Not expected</strong>
+            </div>
+            <div>
+              <span>Drainage recovery</span>
+              <strong id="drainage-resume-time">Already efficient</strong>
+            </div>
+          </div>
+          <div id="comparison-summary" class="comparison-summary hidden">
+            <h3>Outcome comparison</h3>
+            <div class="comparison-cards">
+              <div><span>Scenario A max yard</span><strong id="compare-a-yard">—</strong></div>
+              <div><span>Scenario B max yard</span><strong id="compare-b-yard">—</strong></div>
+              <div><span>Scenario A max house</span><strong id="compare-a-house">—</strong></div>
+              <div><span>Scenario B max house</span><strong id="compare-b-house">—</strong></div>
+            </div>
+          </div>
+          <div class="model-disclaimer">
+            <strong>Conceptual model</strong>
+            <p>Values illustrate processes and relative sensitivity. They are not parcel-specific flood forecasts or engineering calculations.</p>
+          </div>
+        </aside>
+      </section>
+
+      <section class="timeline-panel panel">
+        <div class="timeline-header">
+          <div>
+            <p class="eyebrow">Storm timeline</p>
+            <h2>Linked 3D scene and time series</h2>
+          </div>
+          <div class="playback-controls">
+            <button id="step-back" title="Step back">−1h</button>
+            <button id="play-pause" class="primary-button">Play</button>
+            <button id="step-forward" title="Step forward">+1h</button>
+            <label>Speed
+              <select id="simulation-speed">
+                <option value="0.5">0.5×</option>
+                <option value="1" selected>1×</option>
+                <option value="2">2×</option>
+                <option value="4">4×</option>
+                <option value="8">8×</option>
+              </select>
+            </label>
+            <button id="reset-playback" class="ghost-button">Reset</button>
+          </div>
+        </div>
+        <div class="timeline-slider-row">
+          <span>0h</span>
+          <input id="timeline-slider" type="range" min="0" max="480" step="1" value="0" />
+          <span>48h</span>
+        </div>
+        <div class="chart-grid">
+          <article class="chart-card">
+            <h3>Rainfall</h3>
+            <canvas id="rain-chart"></canvas>
+          </article>
+          <article class="chart-card">
+            <h3>Water levels</h3>
+            <canvas id="level-chart"></canvas>
+          </article>
+          <article class="chart-card">
+            <h3>Flood depth & drainage</h3>
+            <canvas id="flood-chart"></canvas>
+          </article>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="about-dialog">
+    <button id="close-about" class="dialog-close">×</button>
+    <p class="eyebrow">How to interpret this tool</p>
+    <h2>Surge is a downstream restriction—not a shortcut to the house</h2>
+    <p>The model routes rainfall-generated runoff from the neighborhood into a ditch, through a canal and river, and finally into Lake Pontchartrain. As the lake and river rise, the hydraulic gradient shrinks. Drainage slows, stalls, or reverses, allowing locally generated rainwater to accumulate upstream.</p>
+    <p>The equations are intentionally simplified and use fictional geometry. The visualization is suitable for education and scenario comparison—not property-level prediction, design, insurance, evacuation, or regulatory decisions.</p>
+    <div class="formula-card">
+      <code>Drainage ∝ capacity × sign(ΔH) × √|ΔH|</code>
+      <small>where ΔH is upstream water-surface elevation minus downstream water-surface elevation.</small>
+    </div>
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+      }
+    }
+  </script>
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
